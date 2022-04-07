@@ -264,6 +264,7 @@ Ref<VoxelGIData> VoxelGI::get_probe_data() const {
 void VoxelGI::set_subdiv(Subdiv p_subdiv) {
 	ERR_FAIL_INDEX(p_subdiv, SUBDIV_MAX);
 	subdiv = p_subdiv;
+	_clamp_extents();
 	update_gizmos();
 }
 
@@ -273,6 +274,7 @@ VoxelGI::Subdiv VoxelGI::get_subdiv() const {
 
 void VoxelGI::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
+	_clamp_extents();
 	update_gizmos();
 }
 
@@ -444,6 +446,33 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 void VoxelGI::_debug_bake() {
 	bake(nullptr, true);
+}
+
+void VoxelGI::_clamp_extents() {
+	constexpr int subdivs[SUBDIV_MAX] = { 64, 128, 256, 512 };
+
+	real_t longest_axis = extents.x;
+
+	if (extents.y > longest_axis) {
+		longest_axis = extents.y;
+	}
+
+	if (extents.z > longest_axis) {
+		longest_axis = extents.z;
+	}
+
+	real_t cell_size = longest_axis / subdivs[subdiv];
+
+	// Ensure cell_size does not go bellow 0.001 to prevent a crash.
+	if (cell_size < 0.001) {
+		cell_size = 0.001;
+	}
+
+	for (int i = 0; i < 3; i++) {
+		if (extents[i] < cell_size) {
+			extents[i] = cell_size;
+		}
+	}
 }
 
 AABB VoxelGI::get_aabb() const {

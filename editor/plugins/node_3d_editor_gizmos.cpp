@@ -3604,10 +3604,6 @@ void VoxelGIGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 		d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 	}
 
-	if (d < 0.001) {
-		d = 0.001;
-	}
-
 	extents[p_id] = d;
 	probe->set_extents(extents);
 }
